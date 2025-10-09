@@ -3,9 +3,7 @@ import pandas as pd
 
 def show_page():
     st.image(
-        "https://wallpapers.com/images/hd/titanic-1680-x-1050-background-ld95nte3gk5y0pad.jpg",
-        caption="Титаник",
-        use_column_width=True
+        "https://wallpapers.com/images/hd/titanic-1680-x-1050-background-ld95nte3gk5y0pad.jpg"
     )
     
     st.title("Подсчет доли выживших пассажиров Титаника по каждому пункту посадки")
@@ -19,8 +17,8 @@ def show_page():
     
     st.subheader("Выбор максимального возраста")
     
-    min_age = int(df["Age"].min())
-    max_age = int(df["Age"].max())
+    min_age = int(data["Age"].min())
+    max_age = int(data["Age"].max())
     
     selected_age = st.slider(
         "Выберите максимальный возраст пассажиров:",
@@ -31,7 +29,7 @@ def show_page():
         help="Выберите максимальный возраст — таблица обновится автоматически"
     )
     
-    filtered_df = df[df["Age"] <= selected_age]
+    filtered_df = data[data["Age"] <= selected_age]
     
     display_mode = st.radio(
         "Формат отображения доли выживших:",
