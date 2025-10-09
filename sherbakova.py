@@ -17,7 +17,7 @@ def show_page():
     
     st.subheader("Выбор максимального возраста")
     
-    min_age = int(data["Age"].min())
+    min_age = max(1, int(data["Age"].min()))
     max_age = int(data["Age"].max())
     
     selected_age = st.slider(
@@ -42,20 +42,20 @@ def show_page():
         st.stop()
     
     survival_by_embarked = (
-        filtered_df.groupby("Embarked")["Survived"]
-        .mean()
+        filtered_df.groupby("Embarked")
+        .agg(
+            Количество=("Survived", "count"),
+            Выжило=("Survived", "sum")
+        )
         .reset_index()
-        .rename(columns={
-            "Embarked": "Пункт посадки",
-            "Survived": "Доля выживших"
-        })
     )
     
-    if display_mode == "Проценты":
-        styled_table = survival_by_embarked.style.format({"Доля выживших": "{:.2%}"})
-    else:
-        styled_table = survival_by_embarked.style.format({"Доля выживших": "{:.3f}"})
+    survival_by_embarked["Доля выживших"] = survival_by_embarked["Выжило"] / survival_by_embarked["Количество"]
     
-    st.subheader("Доля выживших по каждому пункту посадки")
-    st.dataframe(styled_table, use_container_width=True)
-
+    # Форматирование для отображения
+    if display_mode == "Проценты":
+        survival_by_embarked["Доля выживших"] = (survival_by_embarked["Доля выживших"] * 100).round(1)
+        st.dataframe(survival_by_embarked.rename(columns={"Embarked":"Порт"}), use_container_width=True)
+    else:
+        survival_by_embarked["Доля выживших"] = survival_by_embarked["Доля выживших"].round(3)
+        st.dataframe(survival_by_embarked.rename(columns={"Embarked":"Порт"}), use_container_width=True)
