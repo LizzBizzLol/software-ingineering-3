@@ -6,11 +6,13 @@ import torch
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 st.title("Многостраничное Streamlit-приложение")
-page = st.sidebar.selectbox("Выберите страницу", ["Белоглазова", "Усачёва", "Белоглазова. Нейронка", "Щербакова. Нейронка"])
+page = st.sidebar.selectbox("Выберите страницу", ["Белоглазова", "Усачёва", "Щербакова. Титаник", "Белоглазова. Нейронка", "Щербакова. Нейронка"])
 if page == "Белоглазова":
     streamlit1.show_page()
 elif page == "Усачёва":
     app.show_page()
+elif page == "Щербакова. Титаник":
+    sherbakova.show_page()
 elif page == "Белоглазова. Нейронка":
     st.title("Кросс-лингвистическое сравнение текстов (mmBERT)")
     
