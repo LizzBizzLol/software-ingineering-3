@@ -1,13 +1,12 @@
 import streamlit as st
 import streamlit1
 import app
-import streamlit as st
-from transformers import AutoTokenizer, AutoModel
+from transformers import AutoTokenizer, AutoModel, pipeline
 import torch
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 st.title("Многостраничное Streamlit-приложение")
-page = st.sidebar.selectbox("Выберите страницу", ["Белоглазова", "Усачёва", "Белоглазова. Нейронка"])
+page = st.sidebar.selectbox("Выберите страницу", ["Белоглазова", "Усачёва", "Белоглазова. Нейронка", "Щербакова. Нейронка"])
 if page == "Белоглазова":
     streamlit1.show_page()
 elif page == "Усачёва":
@@ -88,3 +87,34 @@ elif page == "Белоглазова. Нейронка":
         Модель **jhu-clsp/mmBERT-base** — это мультиязычная BERT-модель, обученная на параллельных корпусах для улучшения кросс-лингвистических представлений.
         Она позволяет сравнивать семантическое сходство текстов на разных языках.
         """)
+elif page == "Щербакова. Нейронка":
+    st.title("Проверка текста на спам")
+
+    @st.cache_resource
+    def load_spam_model():
+        try:
+            with st.spinner("Загружаю модель RUSpam/spam_deberta_v4... Пожалуйста, подождите."):
+                model = pipeline("text-classification", model="RUSpam/spam_deberta_v4")
+            return model
+        except Exception as e:
+            st.error(f"Ошибка при загрузке модели: {e}")
+            st.stop()
+
+    textclassification = load_spam_model()
+    st.success("Модель успешно загружена и готова к работе!")
+
+    text = st.text_area("Введите текст для проверки:", "Вы выиграли приз! Переходите по ссылке для получения")
+
+    if st.button("Проверить"):
+        if not text.strip():
+            st.warning("Введите текст для проверки")
+        else:
+            with st.spinner("🔍 Анализирую текст..."):
+                result = textclassification(text)[0]
+                label = result["label"]
+                score = result["score"]
+                verdict = "Спам" if label == "LABEL_1" else "Не спам"
+
+            st.subheader(f"Результат: **{verdict}**")
+            st.progress(score)
+            st.write(f"Уверенность модели: {score*100:.2f}%")
