@@ -1,27 +1,20 @@
+# modeltextimage.py
 import streamlit as st
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 import torch
 
 @st.cache_resource
-def load_ru_summarizer():
+def load_model():
     model_name = "IlyaGusev/ru_t5_base_summarizer"
     tokenizer = T5Tokenizer.from_pretrained(model_name)
     model = T5ForConditionalGeneration.from_pretrained(model_name)
     return tokenizer, model
 
-tokenizer, model = load_ru_summarizer()
-
-def summarize_russian(text):
-    # Модель ожидает префикс "summarize: ", но для русской версии он не обязателен
-    inputs = tokenizer(
-        text,
-        return_tensors="pt",
-        max_length=1024,
-        truncation=True,
-        padding="max_length"
-    )
+def summarize(text):
+    tokenizer, model = load_model()
+    inputs = tokenizer(text, return_tensors="pt", max_length=1024, truncation=True, padding="max_length")
     summary_ids = model.generate(
-        inputs.input_ids,
+        inputs["input_ids"],
         max_length=256,
         min_length=30,
         length_penalty=1.2,
@@ -30,20 +23,14 @@ def summarize_russian(text):
     )
     return tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
-st.set_page_config(page_title="✂️ Суммаризация на русском", layout="centered")
-st.title("✂️ Суммаризация текста на русском языке")
-st.caption("Введите любой русский текст — модель создаст краткое содержание.")
-
-input_text = st.text_area(
-    "📝 Введите текст на русском:",
-    "Искусственный интеллект — это область компьютерных наук, которая занимается созданием систем, способных выполнять задачи, требующие человеческого интеллекта. К таким задачам относятся распознавание речи, принятие решений, обучение и понимание естественного языка. В последние годы ИИ добился значительного прогресса благодаря развитию глубокого обучения и увеличению вычислительных мощностей."
-)
-
-if st.button("Создать краткое содержание"):
-    if input_text.strip():
-        with st.spinner("Генерация суммаризации... (первый запуск может занять 30–90 секунд)"):
-            summary = summarize_russian(input_text)
-        st.subheader("✅ Краткое содержание")
-        st.write(summary)
-    else:
-        st.warning("Пожалуйста, введите текст.")
+def show_page():
+    st.title("✂️ Суммаризация текста на русском")
+    text = st.text_area("Введите текст на русском:", "Искусственный интеллект — это...")
+    if st.button("Суммаризировать"):
+        if text.strip():
+            with st.spinner("Обработка..."):
+                result = summarize(text)
+            st.subheader("Результат:")
+            st.write(result)
+        else:
+            st.warning("Введите текст!")
