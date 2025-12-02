@@ -1,71 +1,49 @@
 import streamlit as st
-from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import T5Tokenizer, T5ForConditionalGeneration
 import torch
-from PIL import Image
-from io import BytesIO
-
-st.set_page_config(page_title="🎨 Генератор изображений (русский)", layout="centered")
-st.title("🎨 Генератор изображений по описанию")
-st.caption("Пишите на русском — система переведёт и создаст изображение!")
 
 @st.cache_resource
-def load_translation_pipeline():
-    """Загружает модель перевода: русский → английский"""
-    model_name = "Helsinki-NLP/opus-mt-ru-en"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-    translator = pipeline("translation", model=model, tokenizer=tokenizer, device=0 if torch.cuda.is_available() else -1)
-    return translator
+def load_ru_summarizer():
+    model_name = "IlyaGusev/ru_t5_base_summarizer"
+    tokenizer = T5Tokenizer.from_pretrained(model_name)
+    model = T5ForConditionalGeneration.from_pretrained(model_name)
+    return tokenizer, model
 
-@st.cache_resource
-def load_image_generator():
-    """Загружает модель генерации изображений"""
-    device = 0 if torch.cuda.is_available() else -1
-    generator = pipeline(
-        "text-to-image",
-        model="runwayml/stable-diffusion-v1-5",
-        torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
-        device=device
+tokenizer, model = load_ru_summarizer()
+
+def summarize_russian(text):
+    # Модель ожидает префикс "summarize: ", но для русской версии он не обязателен
+    inputs = tokenizer(
+        text,
+        return_tensors="pt",
+        max_length=1024,
+        truncation=True,
+        padding="max_length"
     )
-    return generator
+    summary_ids = model.generate(
+        inputs.input_ids,
+        max_length=256,
+        min_length=30,
+        length_penalty=1.2,
+        num_beams=4,
+        early_stopping=True
+    )
+    return tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
-try:
-    translator = load_translation_pipeline()
-    image_gen = load_image_generator()
-except Exception as e:
-    st.error(f"Ошибка загрузки модели: {e}")
-    st.stop()
+st.set_page_config(page_title="✂️ Суммаризация на русском", layout="centered")
+st.title("✂️ Суммаризация текста на русском языке")
+st.caption("Введите любой русский текст — модель создаст краткое содержание.")
 
-user_prompt_ru = st.text_input("💬 Опишите, что вы хотите увидеть (на русском):", "Кот в космосе, цифровое искусство")
+input_text = st.text_area(
+    "📝 Введите текст на русском:",
+    "Искусственный интеллект — это область компьютерных наук, которая занимается созданием систем, способных выполнять задачи, требующие человеческого интеллекта. К таким задачам относятся распознавание речи, принятие решений, обучение и понимание естественного языка. В последние годы ИИ добился значительного прогресса благодаря развитию глубокого обучения и увеличению вычислительных мощностей."
+)
 
-if st.button("🚀 Сгенерировать изображение"):
-    if not user_prompt_ru.strip():
-        st.warning("Пожалуйста, введите описание.")
+if st.button("Создать краткое содержание"):
+    if input_text.strip():
+        with st.spinner("Генерация суммаризации... (первый запуск может занять 30–90 секунд)"):
+            summary = summarize_russian(input_text)
+        st.subheader("✅ Краткое содержание")
+        st.write(summary)
     else:
-        with st.spinner("Переводим на английский..."):
-            # Перевод с русского на английский
-            translation = translator(user_prompt_ru, max_length=64)
-            prompt_en = translation[0]['translation_text']
-        
-        st.info(f"Переведено: _{prompt_en}_")
-        
-        with st.spinner("Генерация изображения... (это может занять 30–90 сек на CPU)"):
-            try:
-                # Генерация изображения
-                result = image_gen(prompt_en, num_inference_steps=25)
-                image: Image.Image = result[0]["generated_image"]
-                
-                # Отображение
-                st.image(image, caption=f"Запрос: {user_prompt_ru}", use_column_width=True)
-                
-                # Кнопка скачивания
-                buf = BytesIO()
-                image.save(buf, format="PNG")
-                st.download_button(
-                    label="💾 Скачать изображение",
-                    data=buf.getvalue(),
-                    file_name="generated_image.png",
-                    mime="image/png"
-                )
-            except Exception as e:
-                st.error(f"Ошибка генерации: {e}")
+        st.warning("Пожалуйста, введите текст.")
