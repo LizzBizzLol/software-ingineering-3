@@ -28,7 +28,7 @@ def get_model():
         _model.eval()
     return _tokenizer, _model
 
-@app.get("/health")
+@app.get("/")
 def health():
     return {"status": "ok", "model": MODEL_NAME}
 
