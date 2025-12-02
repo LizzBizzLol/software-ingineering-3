@@ -5,11 +5,10 @@ from .models import SummarizeRequest, SummarizeResponse
 import torch
 
 APP_TITLE = "ru-summarizer-api"
-MODEL_NAME = "IlyaGusev/ru_t5_base_summarizer"
+MODEL_NAME = "cointegrated/rut5-base-absum"   # <-- новая модель
 
 app = FastAPI(title=APP_TITLE, version="1.0.0")
 
-# Разрешим запросы с фронтов (Streamlit/локально/браузер)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -58,6 +57,7 @@ def summarize(req: SummarizeRequest):
         )
 
     summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+
     return SummarizeResponse(
         summary=summary,
         tokens_in=int(inputs.input_ids.shape[1]),
