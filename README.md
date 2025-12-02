@@ -28,14 +28,17 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 ## 3. Запуск FastAPI-сервера
-uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn api.main:app --reload
 
 ## 4. Примеры запросов к API
 
 ### 4.1 Проверка состояния сервера
-http://127.0.0.1:8000/health
+http://127.0.0.1:8000
 
-### 4.2 Суммаризация текста
+### 4.2 Проверка документации
+http://127.0.0.1:8000/docs
+
+### 4.3 Суммаризация текста
 curl -X POST "http://127.0.0.1:8000/summarize" -H "Content-Type: application/json" -d "{\"text\": \"Искусственный интеллект помогает автоматизировать сложные процессы.\"}"
 
 УЧТИТЕ: Текст должен быть в одну строку.
