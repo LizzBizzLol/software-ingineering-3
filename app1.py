@@ -2,21 +2,21 @@ import streamlit as st
 import streamlit1
 import sherbakova
 import app
-import modeltextimage
+import model
 from transformers import AutoTokenizer, AutoModel, pipeline
 import torch
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 st.title("Многостраничное Streamlit-приложение")
-page = st.sidebar.selectbox("Выберите страницу", ["Генерация изображений по тексту","Белоглазова", "Усачёва", "Щербакова. Титаник", "Белоглазова. Нейронка", "Щербакова. Нейронка"])
+page = st.sidebar.selectbox("Выберите страницу", ["Резюмирование текста","Белоглазова", "Усачёва", "Щербакова. Титаник", "Белоглазова. Нейронка", "Щербакова. Нейронка"])
 if page == "Белоглазова":
     streamlit1.show_page()
 elif page == "Усачёва":
     app.show_page()
 elif page == "Щербакова. Титаник":
     sherbakova.show_page()
-elif page == "Генерация изображений по тексту":
-    modeltextimage.show_page()
+elif page == "Резюмирование текста":
+    modelt.show_page()
 elif page == "Белоглазова. Нейронка":
     st.title("Кросс-лингвистическое сравнение текстов (mmBERT)")
     
