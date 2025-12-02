@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit1
 import sherbakova
 import app
-import model
+import modeltextimage
 from transformers import AutoTokenizer, AutoModel, pipeline
 import torch
 from sklearn.metrics.pairwise import cosine_similarity
@@ -16,7 +16,7 @@ elif page == "Усачёва":
 elif page == "Щербакова. Титаник":
     sherbakova.show_page()
 elif page == "Резюмирование текста":
-    modelt.show_page()
+    modeltextimage.show_page()
 elif page == "Белоглазова. Нейронка":
     st.title("Кросс-лингвистическое сравнение текстов (mmBERT)")
     
