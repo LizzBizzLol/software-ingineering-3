@@ -8,8 +8,8 @@ API предоставляет два основных эндпоинта:
 - POST /summarize — получение краткого содержания текста
 
 ## 1. Клонирование репозитория
-git clone <URL_РЕПОЗИТОРИЯ>
-cd <ИМЯ_ПАПКИ_ПРОЕКТА>
+git clone https://github.com/LizzBizzLol/software-ingineering-3
+cd software-ingineering-3
 
 ## 2. Подготовка окружения и установка зависимостей
 Рекомендуемая версия Python: 3.12.
