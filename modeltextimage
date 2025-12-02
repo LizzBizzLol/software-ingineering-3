@@ -1,0 +1,71 @@
+import streamlit as st
+from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
+import torch
+from PIL import Image
+from io import BytesIO
+
+st.set_page_config(page_title="🎨 Генератор изображений (русский)", layout="centered")
+st.title("🎨 Генератор изображений по описанию")
+st.caption("Пишите на русском — система переведёт и создаст изображение!")
+
+@st.cache_resource
+def load_translation_pipeline():
+    """Загружает модель перевода: русский → английский"""
+    model_name = "Helsinki-NLP/opus-mt-ru-en"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+    translator = pipeline("translation", model=model, tokenizer=tokenizer, device=0 if torch.cuda.is_available() else -1)
+    return translator
+
+@st.cache_resource
+def load_image_generator():
+    """Загружает модель генерации изображений"""
+    device = 0 if torch.cuda.is_available() else -1
+    generator = pipeline(
+        "text-to-image",
+        model="runwayml/stable-diffusion-v1-5",
+        torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+        device=device
+    )
+    return generator
+
+try:
+    translator = load_translation_pipeline()
+    image_gen = load_image_generator()
+except Exception as e:
+    st.error(f"Ошибка загрузки модели: {e}")
+    st.stop()
+
+user_prompt_ru = st.text_input("💬 Опишите, что вы хотите увидеть (на русском):", "Кот в космосе, цифровое искусство")
+
+if st.button("🚀 Сгенерировать изображение"):
+    if not user_prompt_ru.strip():
+        st.warning("Пожалуйста, введите описание.")
+    else:
+        with st.spinner("Переводим на английский..."):
+            # Перевод с русского на английский
+            translation = translator(user_prompt_ru, max_length=64)
+            prompt_en = translation[0]['translation_text']
+        
+        st.info(f"Переведено: _{prompt_en}_")
+        
+        with st.spinner("Генерация изображения... (это может занять 30–90 сек на CPU)"):
+            try:
+                # Генерация изображения
+                result = image_gen(prompt_en, num_inference_steps=25)
+                image: Image.Image = result[0]["generated_image"]
+                
+                # Отображение
+                st.image(image, caption=f"Запрос: {user_prompt_ru}", use_column_width=True)
+                
+                # Кнопка скачивания
+                buf = BytesIO()
+                image.save(buf, format="PNG")
+                st.download_button(
+                    label="💾 Скачать изображение",
+                    data=buf.getvalue(),
+                    file_name="generated_image.png",
+                    mime="image/png"
+                )
+            except Exception as e:
+                st.error(f"Ошибка генерации: {e}")
