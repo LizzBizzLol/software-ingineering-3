@@ -16,28 +16,42 @@ cd software-ingineering-3
 Рекомендуемая версия Python: 3.12.
 
 ### 2.1 Создать виртуальное окружение
-```python -m venv .venv```
+```
+python -m venv .venv
+```
 
 ### 2.2 Активировать окружение
 Windows:
-```.\.venv\Scripts\activate```
+```
+.\.venv\Scripts\activate
+```
 Linux/macOS:
-```source .venv/bin/activate```
+```
+source .venv/bin/activate
+```
 
 ### 2.3 Установить зависимости
-```pip install --upgrade pip
-pip install -r requirements.txt```
+```
+pip install --upgrade pip
+pip install -r requirements.txt
+```
 
 ## 3. Запуск FastAPI-сервера
-```uvicorn api.main:app --reload```
+```
+uvicorn api.main:app --reload
+```
 
 ## 4. Примеры запросов к API
 
 ### 4.1 Проверка состояния сервера
-```http://127.0.0.1:8000```
+```
+http://127.0.0.1:8000
+```
 
 ### 4.2 Проверка документации
-```http://127.0.0.1:8000/docs```
+```
+http://127.0.0.1:8000/docs
+```
 
 ### 4.3 Суммаризация текста
 ```
