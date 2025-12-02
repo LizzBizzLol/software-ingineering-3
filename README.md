@@ -45,4 +45,5 @@ curl -X POST "http://127.0.0.1:8000/summarize" -H "Content-Type: application/jso
 - summary
 - tokens_in
 - tokens_out
+
 Иногда суммаризация получается довольно «творческой».
